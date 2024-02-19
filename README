@@ -6,7 +6,7 @@ If have used some off your work and forgotten to thank you in this repository, I
 The thought was to automate charging during winter and optimize my average kWh-price. Also bacause its not that easy to change settings on the SonnenBatterie or inverter if you're not at home.
 
 I started with a clean install of HomeAssistant on my RPI5 (4GB):
-# Created and account on GitHub (maybe you already have).
+# Created and account on GitHub (maybe you already have one).
 # Installed SSH og Terminal (Add-on in HomeAssistant)
 # Installed HACS (Add-on in HomeAssistant)
 # Installed Node-RED (Add-on in HomeAssistant)
@@ -15,6 +15,7 @@ I started with a clean install of HomeAssistant on my RPI5 (4GB):
 # Installed Nordpool via HACS (https://github.com/custom-components/nordpool) (When configurering I use the raw price with no VAT, show in cents and kWh)
 # Installed Solcast API via HACS (https://github.com/oziee/ha-solcast-solar) (kræver konto solcast.com.au) - THX oziee 
 # Installed Config-node in Node-RED: node-red-contrib-config
+# Import the flows to Node-RED (Remember to update your token and IP for your Sonnen-setup ind the config-node)
 Added sensor in configuration.yaml "SetPoint_W" (https://community.home-assistant.io/t/sonnenbatterie-with-apiv2-webhook/264907/18) - THX julianlu
 Added the following sensors i configuration.yaml:
 
