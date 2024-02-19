@@ -1,0 +1,90 @@
+Hi!
+
+I've made this Node-RED flow with the inspiration of several other (who I can't thank enough!).
+If have used some off your work and forgotten to thank you in this repository, I can asure you that it's not ill will :-)
+
+The thought was to automate charging during winter and optimize my average kWh-price. Also bacause its not that easy to change settings on the SonnenBatterie or inverter if you're not at home.
+
+I started with a clean install of HomeAssistant on my RPI5 (4GB):
+# Created and account on GitHub (maybe you already have).
+# Installed SSH og Terminal (Add-on in HomeAssistant)
+# Installed HACS (Add-on in HomeAssistant)
+# Installed Node-RED (Add-on in HomeAssistant)
+# Installed Node-RED Companion via HACS
+# Installed SonnenBatterie via HACS (https://github.com/weltmeyer/ha_sonnenbatterie) - THX weltmeyer
+# Installed Nordpool via HACS (https://github.com/custom-components/nordpool) (When configurering I use the raw price with no VAT, show in cents and kWh)
+# Installed Solcast API via HACS (https://github.com/oziee/ha-solcast-solar) (kræver konto solcast.com.au) - THX oziee 
+# Installed Config-node in Node-RED: node-red-contrib-config
+Added sensor in configuration.yaml "SetPoint_W" (https://community.home-assistant.io/t/sonnenbatterie-with-apiv2-webhook/264907/18) - THX julianlu
+Added the following sensors i configuration.yaml:
+
+# Electricity price incl. VAT (Remember to adjust to your local prices)
+# 'trade' = addition to spot-price
+# 'tax' = Eletricity tax (elafgift)
+# 'transport' = tariffs (systemtarif og transmissionsnettarif)
+# The rest is Nettarif C Time (lav, høj og peak) (im on Cerius net)
+  - platform: nordpool
+    region: "DK2"
+    currency: "DKK"
+    VAT: True
+    precision: 4
+    low_price_cutoff: 0.7
+    price_in_cents: true
+    price_type: kWh
+    additional_costs: '{% set s = {
+    "trade": 0.015,
+    "tax": 0.95125,
+    "transport": 0.15625,
+    "winter_low": 0.1407,
+    "winter_high": 0.4223,
+    "winter_peak": 1.2666,
+    "summer_low": 0.1407,
+    "summer_high": 0.2111,
+    "summer_peak": 0.5489
+    }
+    %}
+    {% if now().month >= 3 and now().month < 10 %}
+        {% if now().hour >= 0 and now().hour < 6 %}
+            {{ s.trade + s.tax + s.transport + s.summer_low | float }}
+        {% elif now().hour >= 17 and now().hour < 21 %}
+              {{ s.trade + s.tax + s.transport + s.summer_peak | float }}
+        {% else %}  
+            {{ s.trade + s.tax + s.transport + s.summer_high | float }}
+        {% endif %}
+    {% else %}
+        {% if now().hour >= 0 and now().hour < 6 %}
+            {{ s.trade + s.tax + s.transport + s.winter_low | float }}
+        {% elif now().hour >= 17 and now().hour < 21 %}
+              {{ s.trade + s.tax + s.transport + s.winter_peak | float }}
+        {% else %}  
+            {{ s.trade + s.tax + s.transport + s.winter_high | float }}
+        {% endif %}
+    {% endif %}'
+
+
+#  Electricity price average peak
+  - platform: template
+    sensors:
+      average_price_17_to_21:
+        friendly_name: "Average Price 17-21"
+        unit_of_measurement: 'DKK/kWh'
+        value_template: >
+          {% set today = state_attr("sensor.nordpool_kwh_dk2_dkk_4_07_025", "raw_today") %}
+          {% set selected_values = today[17:21] %}
+          {% set average_price = selected_values | map(attribute='value') | sum / selected_values | length %}
+          {{ average_price }}
+          
+# Electricity price average offpeak
+  - platform: template
+    sensors:
+      average_price_01_to_06:
+        friendly_name: "Average Price 01-06"
+        unit_of_measurement: 'DKK/kWh'
+        value_template: >
+          {% set today = state_attr("sensor.nordpool_kwh_dk2_dkk_4_07_025", "raw_today") %}
+          {% set selected_values = today[1:6] %}
+          {% set average_price = selected_values | map(attribute='value') | sum / selected_values | length %}
+          {{ average_price }}
+
+Then you should just import the Node-RED flows and adjust your token.
+There are more entity states than I use at this time, because its kind of a work in progress.
