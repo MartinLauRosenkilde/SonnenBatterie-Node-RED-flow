@@ -1,3 +1,9 @@
+Updated 09-04-2023:
+Bugfixes
+Updated/revised flow for smarter battery control and lower average electricity costs
+Added a few more sensors to configuration.yaml
+
+---------------------------------------------
 Hi!
 
 I've made this Node-RED flow with the inspiration of several other (who I can't thank enough!).
@@ -44,7 +50,7 @@ Added the following sensors i configuration.yaml:
     "summer_peak": 0.5489
     }
     %}
-    {% if now().month >= 3 and now().month < 10 %}
+    {% if now().month >= 4 and now().month < 10 %}
         {% if now().hour >= 0 and now().hour < 6 %}
             {{ s.trade + s.tax + s.transport + s.summer_low | float }}
         {% elif now().hour >= 17 and now().hour < 21 %}
@@ -86,6 +92,34 @@ Added the following sensors i configuration.yaml:
           {% set selected_values = today[1:6] %}
           {% set average_price = selected_values | map(attribute='value') | sum / selected_values | length %}
           {{ average_price }}
+
+# Electricity price average evening
+  - platform: template
+    sensors:
+      average_price_21_to_00:
+        friendly_name: "Average Price 21-00"
+        unit_of_measurement: 'DKK/kWh'
+        value_template: >
+          {% set today = state_attr("sensor.nordpool_kwh_dk2_dkk_4_07_025", "raw_today") %}
+          {% set selected_values = today[21:23] %}
+          {% set average_price = selected_values | map(attribute='value') | sum / selected_values | length %}
+          {{ average_price }}
+          
+#Electricity price average offpeak_tomorrow
+  - platform: template
+    sensors:
+      average_price_next_day_01_to_06:
+        friendly_name: "Average Price Next Day 01-06"
+        unit_of_measurement: 'DKK/kWh'
+        value_template: >
+          {% if is_state_attr('sensor.nordpool_kwh_dk2_dkk_4_07_025', 'tomorrow_valid', true) %}
+            {% set tomorrow = state_attr("sensor.nordpool_kwh_dk2_dkk_4_07_025", "raw_tomorrow") %}
+            {% set selected_values = tomorrow[1:6] %}
+            {% set average_price = selected_values | map(attribute='value') | sum / selected_values | length %}
+            {{ average_price | round(2) }}
+          {% else %}
+            'N/A'
+          {% endif %}
 
 Then you should just import the Node-RED flows and adjust your token.
 There are more entity states than I use at this time, because its kind of a work in progress.
