@@ -1,0 +1,4518 @@
+[
+    {
+        "id": "78d769ea3d1c094e",
+        "type": "subflow",
+        "name": "SB_Set_Charge",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 60,
+                "y": 100,
+                "wires": [
+                    {
+                        "id": "6eb81931223314cc"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 1640,
+                "y": 40,
+                "wires": [
+                    {
+                        "id": "70105fbf8a0d421a",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 2500,
+                "y": 140,
+                "wires": [
+                    {
+                        "id": "77eab61b593b4a45",
+                        "port": 0
+                    },
+                    {
+                        "id": "7d9e2a677b0152c2",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [],
+        "meta": {},
+        "color": "#3FADB5",
+        "icon": "font-awesome/fa-battery-full"
+    },
+    {
+        "id": "f84db5a1b149ed66",
+        "type": "function",
+        "z": "78d769ea3d1c094e",
+        "name": "get_operating_mode",
+        "func": "try {\n    const startIndex = msg.payload.indexOf('\"OperatingMode\":\"');\n    if (startIndex !== -1) {\n        const valueStart = startIndex + '\"OperatingMode\":\"'.length;\n        const endIndex = msg.payload.indexOf('\"', valueStart);\n        if (endIndex !== -1) {\n            const operatingMode = msg.payload.substring(valueStart, endIndex);\n            msg.payload = operatingMode;\n        } else {\n            throw new Error(\"End of OperatingMode value not found\");\n        }\n    } else {\n        throw new Error(\"OperatingMode pattern not found\");\n    }\n} catch (error) {\n    console.error(\"Error extracting OperatingMode:\", error);\n    msg.payload = \"Error: Unable to extract OperatingMode\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 100,
+        "wires": [
+            [
+                "66bcd0fe6e9c9c4a"
+            ]
+        ]
+    },
+    {
+        "id": "6eb81931223314cc",
+        "type": "http request",
+        "z": "78d769ea3d1c094e",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.31.171/api/v2/status",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "bearer",
+        "senderr": false,
+        "headers": [],
+        "x": 190,
+        "y": 100,
+        "wires": [
+            [
+                "f84db5a1b149ed66"
+            ]
+        ]
+    },
+    {
+        "id": "66bcd0fe6e9c9c4a",
+        "type": "switch",
+        "z": "78d769ea3d1c094e",
+        "name": "Chck_OperatingMode",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "str"
+            },
+            {
+                "t": "neq",
+                "v": "1",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 640,
+        "y": 100,
+        "wires": [
+            [
+                "61509ba7dc7756b1"
+            ],
+            [
+                "ff38f890a6d86801"
+            ]
+        ]
+    },
+    {
+        "id": "ff38f890a6d86801",
+        "type": "function",
+        "z": "78d769ea3d1c094e",
+        "name": "Prepare_set_mode",
+        "func": "var sonnen_ip = global.get(\"sonnen_api_ip\");\nvar sonnen_token = global.get(\"sonnen_api_token\");\n\nvar endpoint = \"/api/v2/configurations\"\n\nmsg.url = \"http://\" + sonnen_ip + endpoint;\nmsg.method = \"PUT\"\nmsg.headers = {};\nmsg.headers['Auth-Token'] = sonnen_token;\nmsg.payload = {\"EM_OperatingMode\":\"1\"}\n\n\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 890,
+        "y": 200,
+        "wires": [
+            [
+                "90a44b9eb10b76cf"
+            ]
+        ]
+    },
+    {
+        "id": "90a44b9eb10b76cf",
+        "type": "http request",
+        "z": "78d769ea3d1c094e",
+        "name": "http_PUT_api",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1100,
+        "y": 200,
+        "wires": [
+            [
+                "3ba3615a217b2bb9"
+            ]
+        ]
+    },
+    {
+        "id": "70105fbf8a0d421a",
+        "type": "change",
+        "z": "78d769ea3d1c094e",
+        "name": "Set_Message",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "Already_Manual_no_change",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1460,
+        "y": 40,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "998cf2307ee94865",
+        "type": "http request",
+        "z": "78d769ea3d1c094e",
+        "name": "Generic HTTP Request",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1810,
+        "y": 160,
+        "wires": [
+            [
+                "a4dafc16a9cd4573"
+            ]
+        ]
+    },
+    {
+        "id": "f0e456c40e33e084",
+        "type": "function",
+        "z": "78d769ea3d1c094e",
+        "name": "Prepare Charging=3500 Watts",
+        "func": "\nvar sonnen_ip = global.get(\"sonnen_api_ip\");\nvar sonnen_token = global.get(\"sonnen_api_token\");\n\nvar endpoint = \"/api/v2/setpoint/charge/3500\";\n\nmsg.url = \"http://\" + sonnen_ip + endpoint;\nmsg.method = \"POST\"\nmsg.headers = {};\nmsg.headers['Auth-Token'] = sonnen_token;\nmsg.payload = {};\n\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1510,
+        "y": 160,
+        "wires": [
+            [
+                "998cf2307ee94865"
+            ]
+        ]
+    },
+    {
+        "id": "3ba3615a217b2bb9",
+        "type": "delay",
+        "z": "78d769ea3d1c094e",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1280,
+        "y": 200,
+        "wires": [
+            [
+                "f0e456c40e33e084"
+            ]
+        ]
+    },
+    {
+        "id": "7d9e2a677b0152c2",
+        "type": "change",
+        "z": "78d769ea3d1c094e",
+        "name": "Set_Message_OK",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "Charge_set_3500",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 2290,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a4dafc16a9cd4573",
+        "type": "switch",
+        "z": "78d769ea3d1c094e",
+        "name": "Chck_Response",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 2040,
+        "y": 160,
+        "wires": [
+            [
+                "7d9e2a677b0152c2"
+            ],
+            [
+                "77eab61b593b4a45"
+            ]
+        ]
+    },
+    {
+        "id": "77eab61b593b4a45",
+        "type": "change",
+        "z": "78d769ea3d1c094e",
+        "name": "Set_Message_Error",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "Error_Discharge_not_set",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 2300,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "61509ba7dc7756b1",
+        "type": "switch",
+        "z": "78d769ea3d1c094e",
+        "name": "Chck_SetPoint",
+        "property": "SetPoint",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "3500",
+                "vt": "str"
+            },
+            {
+                "t": "neq",
+                "v": "3500",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1060,
+        "y": 80,
+        "wires": [
+            [
+                "70105fbf8a0d421a"
+            ],
+            [
+                "f0e456c40e33e084"
+            ]
+        ]
+    },
+    {
+        "id": "2205fa4294b5478a",
+        "type": "subflow",
+        "name": "SB_Set_No_Charge",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 60,
+                "y": 120,
+                "wires": [
+                    {
+                        "id": "984d736e3af99384"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 1600,
+                "y": 40,
+                "wires": [
+                    {
+                        "id": "3d7e4a9c2226ccb7",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 2420,
+                "y": 180,
+                "wires": [
+                    {
+                        "id": "331943a47cc0f879",
+                        "port": 0
+                    },
+                    {
+                        "id": "484a10df7eb83c3f",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [],
+        "meta": {},
+        "color": "#3FADB5",
+        "icon": "font-awesome/fa-hand-stop-o"
+    },
+    {
+        "id": "a721d42568e425af",
+        "type": "function",
+        "z": "2205fa4294b5478a",
+        "name": "get_operating_mode",
+        "func": "try {\n    const startIndex = msg.payload.indexOf('\"OperatingMode\":\"');\n    if (startIndex !== -1) {\n        const valueStart = startIndex + '\"OperatingMode\":\"'.length;\n        const endIndex = msg.payload.indexOf('\"', valueStart);\n        if (endIndex !== -1) {\n            const operatingMode = msg.payload.substring(valueStart, endIndex);\n            msg.payload = operatingMode;\n        } else {\n            throw new Error(\"End of OperatingMode value not found\");\n        }\n    } else {\n        throw new Error(\"OperatingMode pattern not found\");\n    }\n} catch (error) {\n    console.error(\"Error extracting OperatingMode:\", error);\n    msg.payload = \"Error: Unable to extract OperatingMode\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 120,
+        "wires": [
+            [
+                "68c15d53d6843830"
+            ]
+        ]
+    },
+    {
+        "id": "984d736e3af99384",
+        "type": "http request",
+        "z": "2205fa4294b5478a",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.31.171/api/v2/status",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "bearer",
+        "senderr": false,
+        "headers": [],
+        "x": 190,
+        "y": 120,
+        "wires": [
+            [
+                "a721d42568e425af"
+            ]
+        ]
+    },
+    {
+        "id": "68c15d53d6843830",
+        "type": "switch",
+        "z": "2205fa4294b5478a",
+        "name": "Chck_OperatingMode",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "str"
+            },
+            {
+                "t": "neq",
+                "v": "1",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 640,
+        "y": 120,
+        "wires": [
+            [
+                "8939b6aac0c1cd9b"
+            ],
+            [
+                "2db9f368eacffc99"
+            ]
+        ]
+    },
+    {
+        "id": "2db9f368eacffc99",
+        "type": "function",
+        "z": "2205fa4294b5478a",
+        "name": "Prepare_set_mode",
+        "func": "var sonnen_ip = global.get(\"sonnen_api_ip\");\nvar sonnen_token = global.get(\"sonnen_api_token\");\n\nvar endpoint = \"/api/v2/configurations\"\n\nmsg.url = \"http://\" + sonnen_ip + endpoint;\nmsg.method = \"PUT\"\nmsg.headers = {};\nmsg.headers['Auth-Token'] = sonnen_token;\nmsg.payload = {\"EM_OperatingMode\":\"1\"}\n\n\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 890,
+        "y": 200,
+        "wires": [
+            [
+                "a27b0cc45268bb95"
+            ]
+        ]
+    },
+    {
+        "id": "a27b0cc45268bb95",
+        "type": "http request",
+        "z": "2205fa4294b5478a",
+        "name": "http_PUT_api",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1100,
+        "y": 200,
+        "wires": [
+            [
+                "bc8992bdfa5d7519"
+            ]
+        ]
+    },
+    {
+        "id": "3d7e4a9c2226ccb7",
+        "type": "change",
+        "z": "2205fa4294b5478a",
+        "name": "Set_Message",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "Already_Manual_no_change",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1460,
+        "y": 40,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "88ee97858514f139",
+        "type": "http request",
+        "z": "2205fa4294b5478a",
+        "name": "Generic HTTP Request",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1750,
+        "y": 180,
+        "wires": [
+            [
+                "9aebe96431eb6de2"
+            ]
+        ]
+    },
+    {
+        "id": "a7da3ce24baeb8f1",
+        "type": "function",
+        "z": "2205fa4294b5478a",
+        "name": "Prepare charging=0 Watts",
+        "func": "\nvar sonnen_ip = global.get(\"sonnen_api_ip\");\nvar sonnen_token = global.get(\"sonnen_api_token\");\n\nvar endpoint = \"/api/v2/setpoint/charge/0\";\n\nmsg.url = \"http://\" + sonnen_ip + endpoint;\nmsg.method = \"POST\"\nmsg.headers = {};\nmsg.headers['Auth-Token'] = sonnen_token;\nmsg.payload = {};\n\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1490,
+        "y": 180,
+        "wires": [
+            [
+                "88ee97858514f139"
+            ]
+        ]
+    },
+    {
+        "id": "bc8992bdfa5d7519",
+        "type": "delay",
+        "z": "2205fa4294b5478a",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1280,
+        "y": 200,
+        "wires": [
+            [
+                "a7da3ce24baeb8f1"
+            ]
+        ]
+    },
+    {
+        "id": "484a10df7eb83c3f",
+        "type": "change",
+        "z": "2205fa4294b5478a",
+        "name": "Set_Message_OK",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "Charge_set_0_watts",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 2230,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9aebe96431eb6de2",
+        "type": "switch",
+        "z": "2205fa4294b5478a",
+        "name": "Chck_Response",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1980,
+        "y": 180,
+        "wires": [
+            [
+                "484a10df7eb83c3f"
+            ],
+            [
+                "331943a47cc0f879"
+            ]
+        ]
+    },
+    {
+        "id": "331943a47cc0f879",
+        "type": "change",
+        "z": "2205fa4294b5478a",
+        "name": "Set_Message_Error",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "Error_Discharge_not_set",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 2240,
+        "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8939b6aac0c1cd9b",
+        "type": "switch",
+        "z": "2205fa4294b5478a",
+        "name": "Chck_SetPoint",
+        "property": "SetPoint",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "str"
+            },
+            {
+                "t": "neq",
+                "v": "0",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1100,
+        "y": 80,
+        "wires": [
+            [
+                "3d7e4a9c2226ccb7"
+            ],
+            [
+                "a7da3ce24baeb8f1"
+            ]
+        ]
+    },
+    {
+        "id": "bbec9d41a5a0a579",
+        "type": "subflow",
+        "name": "SB_Set_Discharge",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 40,
+                "y": 60,
+                "wires": [
+                    {
+                        "id": "22a226f9c80ee8c5"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 1840,
+                "y": 40,
+                "wires": [
+                    {
+                        "id": "326b81e2203e9f2e",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 2460,
+                "y": 120,
+                "wires": [
+                    {
+                        "id": "13c56e6654f45e0b",
+                        "port": 0
+                    },
+                    {
+                        "id": "1771d449514d0677",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [],
+        "meta": {},
+        "color": "#3FADB5",
+        "icon": "font-awesome/fa-battery-empty"
+    },
+    {
+        "id": "09f31daa3aea3167",
+        "type": "function",
+        "z": "bbec9d41a5a0a579",
+        "name": "get_operating_mode",
+        "func": "try {\n    const startIndex = msg.payload.indexOf('\"OperatingMode\":\"');\n    if (startIndex !== -1) {\n        const valueStart = startIndex + '\"OperatingMode\":\"'.length;\n        const endIndex = msg.payload.indexOf('\"', valueStart);\n        if (endIndex !== -1) {\n            const operatingMode = msg.payload.substring(valueStart, endIndex);\n            msg.payload = operatingMode;\n        } else {\n            throw new Error(\"End of OperatingMode value not found\");\n        }\n    } else {\n        throw new Error(\"OperatingMode pattern not found\");\n    }\n} catch (error) {\n    console.error(\"Error extracting OperatingMode:\", error);\n    msg.payload = \"Error: Unable to extract OperatingMode\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 60,
+        "wires": [
+            [
+                "7a2a01c58ec1d410"
+            ]
+        ]
+    },
+    {
+        "id": "22a226f9c80ee8c5",
+        "type": "http request",
+        "z": "bbec9d41a5a0a579",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.31.171/api/v2/status",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "bearer",
+        "senderr": false,
+        "headers": [],
+        "x": 170,
+        "y": 60,
+        "wires": [
+            [
+                "09f31daa3aea3167"
+            ]
+        ]
+    },
+    {
+        "id": "7a2a01c58ec1d410",
+        "type": "switch",
+        "z": "bbec9d41a5a0a579",
+        "name": "Chck_OperatingMode",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "str"
+            },
+            {
+                "t": "neq",
+                "v": "1",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 620,
+        "y": 60,
+        "wires": [
+            [
+                "424ec17fae1680d3"
+            ],
+            [
+                "0ef649d8f58aa814"
+            ]
+        ]
+    },
+    {
+        "id": "0ef649d8f58aa814",
+        "type": "function",
+        "z": "bbec9d41a5a0a579",
+        "name": "Prepare_set_mode",
+        "func": "var sonnen_ip = global.get(\"sonnen_api_ip\");\nvar sonnen_token = global.get(\"sonnen_api_token\");\n\nvar endpoint = \"/api/v2/configurations\"\n\nmsg.url = \"http://\" + sonnen_ip + endpoint;\nmsg.method = \"PUT\"\nmsg.headers = {};\nmsg.headers['Auth-Token'] = sonnen_token;\nmsg.payload = {\"EM_OperatingMode\":\"1\"}\n\n\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 870,
+        "y": 160,
+        "wires": [
+            [
+                "cfe548d39d9f1550"
+            ]
+        ]
+    },
+    {
+        "id": "cfe548d39d9f1550",
+        "type": "http request",
+        "z": "bbec9d41a5a0a579",
+        "name": "http_PUT_api",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1080,
+        "y": 160,
+        "wires": [
+            [
+                "d8382623f889c075"
+            ]
+        ]
+    },
+    {
+        "id": "326b81e2203e9f2e",
+        "type": "change",
+        "z": "bbec9d41a5a0a579",
+        "name": "Set_Message",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "Already_Manual_no_change",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1440,
+        "y": 40,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "bb5034b2520fe8f6",
+        "type": "http request",
+        "z": "bbec9d41a5a0a579",
+        "name": "Generic HTTP Request",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1790,
+        "y": 120,
+        "wires": [
+            [
+                "ad0d3dec06df6ea3"
+            ]
+        ]
+    },
+    {
+        "id": "782b2fd2cb3acfb8",
+        "type": "function",
+        "z": "bbec9d41a5a0a579",
+        "name": "Prepare Discharging=3300 Watts",
+        "func": "\nvar sonnen_ip = global.get(\"sonnen_api_ip\");\nvar sonnen_token = global.get(\"sonnen_api_token\");\n\nvar endpoint = \"/api/v2/setpoint/discharge/3300\";\n\nmsg.url = \"http://\" + sonnen_ip + endpoint;\nmsg.method = \"POST\"\nmsg.headers = {};\nmsg.headers['Auth-Token'] = sonnen_token;\nmsg.payload = {};\n\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1500,
+        "y": 120,
+        "wires": [
+            [
+                "bb5034b2520fe8f6"
+            ]
+        ]
+    },
+    {
+        "id": "d8382623f889c075",
+        "type": "delay",
+        "z": "bbec9d41a5a0a579",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1260,
+        "y": 160,
+        "wires": [
+            [
+                "782b2fd2cb3acfb8"
+            ]
+        ]
+    },
+    {
+        "id": "13c56e6654f45e0b",
+        "type": "change",
+        "z": "bbec9d41a5a0a579",
+        "name": "Set_Message_OK",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "Discharge_set_3300",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 2270,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ad0d3dec06df6ea3",
+        "type": "switch",
+        "z": "bbec9d41a5a0a579",
+        "name": "Chck_Response",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 2020,
+        "y": 120,
+        "wires": [
+            [
+                "13c56e6654f45e0b"
+            ],
+            [
+                "1771d449514d0677"
+            ]
+        ]
+    },
+    {
+        "id": "1771d449514d0677",
+        "type": "change",
+        "z": "bbec9d41a5a0a579",
+        "name": "Set_Message_Error",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "Error_Discharge_not_set",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 2280,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "424ec17fae1680d3",
+        "type": "switch",
+        "z": "bbec9d41a5a0a579",
+        "name": "Chck_SetPoint",
+        "property": "SetPoint",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "3300",
+                "vt": "str"
+            },
+            {
+                "t": "neq",
+                "v": "3300",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1020,
+        "y": 40,
+        "wires": [
+            [
+                "326b81e2203e9f2e"
+            ],
+            [
+                "782b2fd2cb3acfb8"
+            ]
+        ]
+    },
+    {
+        "id": "cd483fcfd9d131fc",
+        "type": "subflow",
+        "name": "SB_Set_SC",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 40,
+                "y": 40,
+                "wires": [
+                    {
+                        "id": "20f36ece957f6f28"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 1020,
+                "y": 40,
+                "wires": [
+                    {
+                        "id": "559430185634b844",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 1220,
+                "y": 100,
+                "wires": [
+                    {
+                        "id": "d259eecb474f20e3",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [],
+        "meta": {},
+        "color": "#3FADB5",
+        "icon": "font-awesome/fa-sun-o"
+    },
+    {
+        "id": "e7156070a6cce148",
+        "type": "switch",
+        "z": "cd483fcfd9d131fc",
+        "name": "Chck_OperatingMode",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "2",
+                "vt": "str"
+            },
+            {
+                "t": "neq",
+                "v": "2",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 620,
+        "y": 40,
+        "wires": [
+            [
+                "559430185634b844"
+            ],
+            [
+                "3712572e1a92a63f"
+            ]
+        ]
+    },
+    {
+        "id": "3712572e1a92a63f",
+        "type": "function",
+        "z": "cd483fcfd9d131fc",
+        "name": "Prepare_set_mode",
+        "func": "var sonnen_ip = global.get(\"sonnen_api_ip\");\nvar sonnen_token = global.get(\"sonnen_api_token\");\n\nvar endpoint = \"/api/v2/configurations\"\n\nmsg.url = \"http://\" + sonnen_ip + endpoint;\nmsg.method = \"PUT\"\nmsg.headers = {};\nmsg.headers['Auth-Token'] = sonnen_token;\nmsg.payload = {\"EM_OperatingMode\":\"2\"}\n\n\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 870,
+        "y": 100,
+        "wires": [
+            [
+                "d259eecb474f20e3"
+            ]
+        ]
+    },
+    {
+        "id": "d259eecb474f20e3",
+        "type": "http request",
+        "z": "cd483fcfd9d131fc",
+        "name": "http_PUT_api",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1080,
+        "y": 100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "559430185634b844",
+        "type": "change",
+        "z": "cd483fcfd9d131fc",
+        "name": "Set_Message",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "Already_SC_no_change",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 860,
+        "y": 40,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "af58c4e2e3afcf20",
+        "type": "function",
+        "z": "cd483fcfd9d131fc",
+        "name": "get_operating_mode",
+        "func": "try {\n    const startIndex = msg.payload.indexOf('\"OperatingMode\":\"');\n    if (startIndex !== -1) {\n        const valueStart = startIndex + '\"OperatingMode\":\"'.length;\n        const endIndex = msg.payload.indexOf('\"', valueStart);\n        if (endIndex !== -1) {\n            const operatingMode = msg.payload.substring(valueStart, endIndex);\n            msg.payload = operatingMode;\n        } else {\n            throw new Error(\"End of OperatingMode value not found\");\n        }\n    } else {\n        throw new Error(\"OperatingMode pattern not found\");\n    }\n} catch (error) {\n    console.error(\"Error extracting OperatingMode:\", error);\n    msg.payload = \"Error: Unable to extract OperatingMode\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 40,
+        "wires": [
+            [
+                "e7156070a6cce148"
+            ]
+        ]
+    },
+    {
+        "id": "20f36ece957f6f28",
+        "type": "http request",
+        "z": "cd483fcfd9d131fc",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://192.168.31.171/api/v2/status",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "bearer",
+        "senderr": false,
+        "headers": [],
+        "x": 170,
+        "y": 40,
+        "wires": [
+            [
+                "af58c4e2e3afcf20"
+            ]
+        ]
+    },
+    {
+        "id": "caeba8b95670af7b",
+        "type": "subflow",
+        "name": "HA_Get_States",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 40,
+                "y": 300,
+                "wires": [
+                    {
+                        "id": "120d955eeaab2855"
+                    },
+                    {
+                        "id": "de7f8606c5e6ef5b"
+                    },
+                    {
+                        "id": "9b5fa38790bde29f"
+                    },
+                    {
+                        "id": "82949645e4c1cfc9"
+                    },
+                    {
+                        "id": "7c6de5707b9b31f0"
+                    },
+                    {
+                        "id": "d71667931d405ede"
+                    },
+                    {
+                        "id": "c857d0cbf5d4c811"
+                    },
+                    {
+                        "id": "4f7ada405b2a7bd2"
+                    },
+                    {
+                        "id": "e17fad59f7900ef0"
+                    },
+                    {
+                        "id": "7de18e9c1b2d407f"
+                    },
+                    {
+                        "id": "bb3c020a00cfab0e"
+                    },
+                    {
+                        "id": "43b17d200e153e20"
+                    },
+                    {
+                        "id": "3a46072d55704589"
+                    },
+                    {
+                        "id": "814ce9b693ffad0e"
+                    },
+                    {
+                        "id": "ea95d15d8073d6a5"
+                    },
+                    {
+                        "id": "6f6a0fd011685430"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 700,
+                "y": 980,
+                "wires": [
+                    {
+                        "id": "3a46072d55704589",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [],
+        "meta": {},
+        "color": "#FFAAAA",
+        "icon": "node-red/rpi.svg"
+    },
+    {
+        "id": "120d955eeaab2855",
+        "type": "api-current-state",
+        "z": "caeba8b95670af7b",
+        "name": "Sun_Forecast_Today",
+        "server": "f3c6dfc0.bd122",
+        "version": 3,
+        "outputs": 1,
+        "halt_if": "",
+        "halt_if_type": "str",
+        "halt_if_compare": "is",
+        "entity_id": "sensor.solcast_pv_forecast_forecast_today",
+        "state_type": "num",
+        "blockInputOverrides": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entity"
+            }
+        ],
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "override_topic": false,
+        "state_location": "payload",
+        "override_payload": "msg",
+        "entity_location": "data",
+        "override_data": "msg",
+        "x": 320,
+        "y": 20,
+        "wires": [
+            [
+                "bdd8d46844eaafcc"
+            ]
+        ]
+    },
+    {
+        "id": "de7f8606c5e6ef5b",
+        "type": "api-current-state",
+        "z": "caeba8b95670af7b",
+        "name": "Sun_Forecast_Tomorrow",
+        "server": "f3c6dfc0.bd122",
+        "version": 3,
+        "outputs": 1,
+        "halt_if": "",
+        "halt_if_type": "str",
+        "halt_if_compare": "is",
+        "entity_id": "sensor.solcast_pv_forecast_forecast_tomorrow",
+        "state_type": "num",
+        "blockInputOverrides": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entity"
+            }
+        ],
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "override_topic": false,
+        "state_location": "payload",
+        "override_payload": "msg",
+        "entity_location": "data",
+        "override_data": "msg",
+        "x": 330,
+        "y": 80,
+        "wires": [
+            [
+                "c5c8763e257ee658"
+            ]
+        ]
+    },
+    {
+        "id": "bdd8d46844eaafcc",
+        "type": "change",
+        "z": "caeba8b95670af7b",
+        "name": "Saved_Sun_Today",
+        "rules": [
+            {
+                "t": "set",
+                "p": "Sun_Today",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 590,
+        "y": 20,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c5c8763e257ee658",
+        "type": "change",
+        "z": "caeba8b95670af7b",
+        "name": "Saved_Sun_Tomorrow",
+        "rules": [
+            {
+                "t": "set",
+                "p": "Sun_Tomorrow",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 600,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9b5fa38790bde29f",
+        "type": "api-current-state",
+        "z": "caeba8b95670af7b",
+        "name": "SoC",
+        "server": "f3c6dfc0.bd122",
+        "version": 3,
+        "outputs": 1,
+        "halt_if": "",
+        "halt_if_type": "str",
+        "halt_if_compare": "is",
+        "entity_id": "sensor.sonnenbatterie_225965_state_charge_user",
+        "state_type": "num",
+        "blockInputOverrides": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entity"
+            }
+        ],
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "override_topic": false,
+        "state_location": "payload",
+        "override_payload": "msg",
+        "entity_location": "data",
+        "override_data": "msg",
+        "x": 270,
+        "y": 200,
+        "wires": [
+            [
+                "8433c0c3494f366c"
+            ]
+        ]
+    },
+    {
+        "id": "8433c0c3494f366c",
+        "type": "change",
+        "z": "caeba8b95670af7b",
+        "name": "Saved_SoC",
+        "rules": [
+            {
+                "t": "set",
+                "p": "SoC",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 570,
+        "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "82949645e4c1cfc9",
+        "type": "api-current-state",
+        "z": "caeba8b95670af7b",
+        "name": "Weather",
+        "server": "f3c6dfc0.bd122",
+        "version": 3,
+        "outputs": 1,
+        "halt_if": "",
+        "halt_if_type": "str",
+        "halt_if_compare": "is",
+        "entity_id": "weather.forecast_hjem",
+        "state_type": "str",
+        "blockInputOverrides": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entity"
+            }
+        ],
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "override_topic": false,
+        "state_location": "payload",
+        "override_payload": "msg",
+        "entity_location": "data",
+        "override_data": "msg",
+        "x": 280,
+        "y": 140,
+        "wires": [
+            [
+                "23c28c4b76ab90e4"
+            ]
+        ]
+    },
+    {
+        "id": "c857d0cbf5d4c811",
+        "type": "api-current-state",
+        "z": "caeba8b95670af7b",
+        "name": "SB_Status",
+        "server": "f3c6dfc0.bd122",
+        "version": 3,
+        "outputs": 1,
+        "halt_if": "",
+        "halt_if_type": "str",
+        "halt_if_compare": "is",
+        "entity_id": "sensor.sonnenbatterie_225965",
+        "state_type": "str",
+        "blockInputOverrides": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entity"
+            }
+        ],
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "override_topic": false,
+        "state_location": "payload",
+        "override_payload": "msg",
+        "entity_location": "data",
+        "override_data": "msg",
+        "x": 290,
+        "y": 260,
+        "wires": [
+            [
+                "3daf12b1c2959220"
+            ]
+        ]
+    },
+    {
+        "id": "4f7ada405b2a7bd2",
+        "type": "api-current-state",
+        "z": "caeba8b95670af7b",
+        "name": "Grid_Consumption",
+        "server": "f3c6dfc0.bd122",
+        "version": 3,
+        "outputs": 1,
+        "halt_if": "",
+        "halt_if_type": "str",
+        "halt_if_compare": "is",
+        "entity_id": "sensor.sonnenbatterie_225965_consumption_w",
+        "state_type": "num",
+        "blockInputOverrides": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entity"
+            }
+        ],
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "override_topic": false,
+        "state_location": "payload",
+        "override_payload": "msg",
+        "entity_location": "data",
+        "override_data": "msg",
+        "x": 310,
+        "y": 320,
+        "wires": [
+            [
+                "4aa9822d2f6a4d37"
+            ]
+        ]
+    },
+    {
+        "id": "7de18e9c1b2d407f",
+        "type": "api-current-state",
+        "z": "caeba8b95670af7b",
+        "name": "Production",
+        "server": "f3c6dfc0.bd122",
+        "version": 3,
+        "outputs": 1,
+        "halt_if": "",
+        "halt_if_type": "str",
+        "halt_if_compare": "is",
+        "entity_id": "sensor.sonnenbatterie_225965_production_w",
+        "state_type": "num",
+        "blockInputOverrides": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entity"
+            }
+        ],
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "override_topic": false,
+        "state_location": "payload",
+        "override_payload": "msg",
+        "entity_location": "data",
+        "override_data": "msg",
+        "x": 290,
+        "y": 440,
+        "wires": [
+            [
+                "dce0adf2bca7ecbe"
+            ]
+        ]
+    },
+    {
+        "id": "d71667931d405ede",
+        "type": "api-current-state",
+        "z": "caeba8b95670af7b",
+        "name": "kWh_Price_Raw",
+        "server": "f3c6dfc0.bd122",
+        "version": 3,
+        "outputs": 1,
+        "halt_if": "",
+        "halt_if_type": "str",
+        "halt_if_compare": "is",
+        "entity_id": "sensor.nordpool_kwh_dk2_dkk_4_10_0",
+        "state_type": "num",
+        "blockInputOverrides": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entity"
+            }
+        ],
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "override_topic": false,
+        "state_location": "payload",
+        "override_payload": "msg",
+        "entity_location": "data",
+        "override_data": "msg",
+        "x": 300,
+        "y": 500,
+        "wires": [
+            [
+                "7cbb0192a48265fb"
+            ]
+        ]
+    },
+    {
+        "id": "7c6de5707b9b31f0",
+        "type": "api-current-state",
+        "z": "caeba8b95670af7b",
+        "name": "kWh_Price_Total",
+        "server": "f3c6dfc0.bd122",
+        "version": 3,
+        "outputs": 1,
+        "halt_if": "",
+        "halt_if_type": "str",
+        "halt_if_compare": "is",
+        "entity_id": "sensor.nordpool_kwh_dk2_dkk_4_07_025",
+        "state_type": "num",
+        "blockInputOverrides": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entity"
+            }
+        ],
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "override_topic": false,
+        "state_location": "payload",
+        "override_payload": "msg",
+        "entity_location": "data",
+        "override_data": "msg",
+        "x": 310,
+        "y": 560,
+        "wires": [
+            [
+                "528035d781da5167"
+            ]
+        ]
+    },
+    {
+        "id": "23c28c4b76ab90e4",
+        "type": "change",
+        "z": "caeba8b95670af7b",
+        "name": "Saved_Weather",
+        "rules": [
+            {
+                "t": "set",
+                "p": "Weather",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 580,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "528035d781da5167",
+        "type": "change",
+        "z": "caeba8b95670af7b",
+        "name": "Saved_Price_Total",
+        "rules": [
+            {
+                "t": "set",
+                "p": "PriceTotal",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 590,
+        "y": 560,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "7cbb0192a48265fb",
+        "type": "change",
+        "z": "caeba8b95670af7b",
+        "name": "Saved_Price_Raw",
+        "rules": [
+            {
+                "t": "set",
+                "p": "PriceRaw",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 590,
+        "y": 500,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3daf12b1c2959220",
+        "type": "change",
+        "z": "caeba8b95670af7b",
+        "name": "Saved_SB_Status",
+        "rules": [
+            {
+                "t": "set",
+                "p": "SB_Status",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 590,
+        "y": 260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e17fad59f7900ef0",
+        "type": "api-current-state",
+        "z": "caeba8b95670af7b",
+        "name": "Battery_in/out",
+        "server": "f3c6dfc0.bd122",
+        "version": 3,
+        "outputs": 1,
+        "halt_if": "",
+        "halt_if_type": "str",
+        "halt_if_compare": "is",
+        "entity_id": "sensor.sonnenbatterie_225965_state_battery_inout",
+        "state_type": "num",
+        "blockInputOverrides": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entity"
+            }
+        ],
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "override_topic": false,
+        "state_location": "payload",
+        "override_payload": "msg",
+        "entity_location": "data",
+        "override_data": "msg",
+        "x": 300,
+        "y": 380,
+        "wires": [
+            [
+                "26aa8505f9e3b21e"
+            ]
+        ]
+    },
+    {
+        "id": "4aa9822d2f6a4d37",
+        "type": "change",
+        "z": "caeba8b95670af7b",
+        "name": "Saved_Grid_Con",
+        "rules": [
+            {
+                "t": "set",
+                "p": "GridCon",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 590,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "26aa8505f9e3b21e",
+        "type": "change",
+        "z": "caeba8b95670af7b",
+        "name": "Saved_Battery",
+        "rules": [
+            {
+                "t": "set",
+                "p": "Battery",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 580,
+        "y": 380,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "dce0adf2bca7ecbe",
+        "type": "change",
+        "z": "caeba8b95670af7b",
+        "name": "Saved_Production",
+        "rules": [
+            {
+                "t": "set",
+                "p": "Production",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 590,
+        "y": 440,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "bb3c020a00cfab0e",
+        "type": "api-current-state",
+        "z": "caeba8b95670af7b",
+        "name": "kWh_Price_Avg_Peak",
+        "server": "f3c6dfc0.bd122",
+        "version": 3,
+        "outputs": 1,
+        "halt_if": "",
+        "halt_if_type": "str",
+        "halt_if_compare": "is",
+        "entity_id": "sensor.average_price_17_to_21",
+        "state_type": "num",
+        "blockInputOverrides": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entity"
+            }
+        ],
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "override_topic": false,
+        "state_location": "payload",
+        "override_payload": "msg",
+        "entity_location": "data",
+        "override_data": "msg",
+        "x": 320,
+        "y": 620,
+        "wires": [
+            [
+                "92b2a6f00a5695ac"
+            ]
+        ]
+    },
+    {
+        "id": "92b2a6f00a5695ac",
+        "type": "change",
+        "z": "caeba8b95670af7b",
+        "name": "Saved_Price_Avg_Peak",
+        "rules": [
+            {
+                "t": "set",
+                "p": "PriceAvgPeak",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 610,
+        "y": 620,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "43b17d200e153e20",
+        "type": "api-current-state",
+        "z": "caeba8b95670af7b",
+        "name": "SetPoint",
+        "server": "f3c6dfc0.bd122",
+        "version": 3,
+        "outputs": 1,
+        "halt_if": "",
+        "halt_if_type": "str",
+        "halt_if_compare": "is",
+        "entity_id": "sensor.sonnenapiv2_latest_setpoint_w",
+        "state_type": "num",
+        "blockInputOverrides": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entity"
+            }
+        ],
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "override_topic": false,
+        "state_location": "payload",
+        "override_payload": "msg",
+        "entity_location": "data",
+        "override_data": "msg",
+        "x": 280,
+        "y": 860,
+        "wires": [
+            [
+                "39fbe857653e8623"
+            ]
+        ]
+    },
+    {
+        "id": "39fbe857653e8623",
+        "type": "change",
+        "z": "caeba8b95670af7b",
+        "name": "Saved_SetPoint",
+        "rules": [
+            {
+                "t": "set",
+                "p": "SetPoint",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 580,
+        "y": 860,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "814ce9b693ffad0e",
+        "type": "api-current-state",
+        "z": "caeba8b95670af7b",
+        "name": "kWh_Price_Avg_Night",
+        "server": "f3c6dfc0.bd122",
+        "version": 3,
+        "outputs": 1,
+        "halt_if": "",
+        "halt_if_type": "str",
+        "halt_if_compare": "is",
+        "entity_id": "sensor.average_price_01_to_06",
+        "state_type": "num",
+        "blockInputOverrides": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entity"
+            }
+        ],
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "override_topic": false,
+        "state_location": "payload",
+        "override_payload": "msg",
+        "entity_location": "data",
+        "override_data": "msg",
+        "x": 320,
+        "y": 680,
+        "wires": [
+            [
+                "c06e24bd86cfb498"
+            ]
+        ]
+    },
+    {
+        "id": "c06e24bd86cfb498",
+        "type": "change",
+        "z": "caeba8b95670af7b",
+        "name": "Saved_Price_Avg_Night",
+        "rules": [
+            {
+                "t": "set",
+                "p": "PriceAvgNight",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 610,
+        "y": 680,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3a46072d55704589",
+        "type": "delay",
+        "z": "caeba8b95670af7b",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "2",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 140,
+        "y": 980,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ea95d15d8073d6a5",
+        "type": "api-current-state",
+        "z": "caeba8b95670af7b",
+        "name": "kWh_Price_Avg_Next_Night",
+        "server": "f3c6dfc0.bd122",
+        "version": 3,
+        "outputs": 1,
+        "halt_if": "",
+        "halt_if_type": "str",
+        "halt_if_compare": "is",
+        "entity_id": "sensor.average_price_next_day_01_to_06",
+        "state_type": "num",
+        "blockInputOverrides": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entity"
+            }
+        ],
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "override_topic": false,
+        "state_location": "payload",
+        "override_payload": "msg",
+        "entity_location": "data",
+        "override_data": "msg",
+        "x": 340,
+        "y": 740,
+        "wires": [
+            [
+                "5a869aae107e0886"
+            ]
+        ]
+    },
+    {
+        "id": "5a869aae107e0886",
+        "type": "change",
+        "z": "caeba8b95670af7b",
+        "name": "Saved_Price_Avg_Next_Night",
+        "rules": [
+            {
+                "t": "set",
+                "p": "PriceAvgNextNight",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 630,
+        "y": 740,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6f6a0fd011685430",
+        "type": "api-current-state",
+        "z": "caeba8b95670af7b",
+        "name": "kWh_Price_Avg_evening",
+        "server": "f3c6dfc0.bd122",
+        "version": 3,
+        "outputs": 1,
+        "halt_if": "",
+        "halt_if_type": "str",
+        "halt_if_compare": "is",
+        "entity_id": "sensor.average_price_21_to_00",
+        "state_type": "num",
+        "blockInputOverrides": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entity"
+            }
+        ],
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "override_topic": false,
+        "state_location": "payload",
+        "override_payload": "msg",
+        "entity_location": "data",
+        "override_data": "msg",
+        "x": 330,
+        "y": 800,
+        "wires": [
+            [
+                "969b1f457544f489"
+            ]
+        ]
+    },
+    {
+        "id": "969b1f457544f489",
+        "type": "change",
+        "z": "caeba8b95670af7b",
+        "name": "Saved_Price_Avg_Evening",
+        "rules": [
+            {
+                "t": "set",
+                "p": "PriceAvgEve",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 620,
+        "y": 800,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f3c6dfc0.bd122",
+        "type": "server",
+        "name": "Home Assistant",
+        "addon": true
+    },
+    {
+        "id": "df83788214c878df",
+        "type": "tab",
+        "label": "SonnenBatterie",
+        "disabled": true,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "68a6cde58657ce97",
+        "type": "inject",
+        "z": "df83788214c878df",
+        "name": "Check_every_60 seconds",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "60",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 220,
+        "y": 380,
+        "wires": [
+            [
+                "6fbc4c85d4504af6"
+            ]
+        ]
+    },
+    {
+        "id": "78545d2d0016e033",
+        "type": "subflow:caeba8b95670af7b",
+        "z": "df83788214c878df",
+        "name": "",
+        "x": 640,
+        "y": 380,
+        "wires": [
+            [
+                "3481257f64732d66"
+            ]
+        ]
+    },
+    {
+        "id": "6fbc4c85d4504af6",
+        "type": "change",
+        "z": "df83788214c878df",
+        "name": "Time_Saved",
+        "rules": [
+            {
+                "t": "set",
+                "p": "Timestamp",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 450,
+        "y": 380,
+        "wires": [
+            [
+                "78545d2d0016e033"
+            ]
+        ]
+    },
+    {
+        "id": "3481257f64732d66",
+        "type": "function",
+        "z": "df83788214c878df",
+        "name": "Summer_or_winter?",
+        "func": "// Function node code\nconst timestamp = global.get('Timestamp'); // Get the timestamp from global context\nconst date = new Date(timestamp);\nconst month = date.getMonth() + 1; // Months are zero-based, so January is 0, February is 1, and so on\n\n// Check if the month falls within the summer or winter season\nif ((month >= 4 && month <= 9) || (month >= 10 || month <= 3)) {\n    msg.payload = (month >= 4 && month <= 9) ? 'summer' : 'winter';\n} else {\n    // If it's not summer or winter, it's assumed to be some other time of the year\n    msg.payload = 'other';\n}\n\n// Return the message\nreturn msg;\n\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 860,
+        "y": 380,
+        "wires": [
+            [
+                "399668b731886808"
+            ]
+        ]
+    },
+    {
+        "id": "399668b731886808",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "Time_of_year?",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "summer",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "winter",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1080,
+        "y": 380,
+        "wires": [
+            [
+                "699be7058d8af300"
+            ],
+            [
+                "f010508cb773ee11"
+            ]
+        ]
+    },
+    {
+        "id": "699be7058d8af300",
+        "type": "function",
+        "z": "df83788214c878df",
+        "name": "Is_It_Nighttime?",
+        "func": "// Function node code\nconst inputDate = global.get('Timestamp'); // Get the timestamp from global context\nconst date = new Date(inputDate);\n\n// Define start and end times within the day (in minutes since midnight)\nconst startTime = 0 * 60; // 0:00 AM converted to minutes (0 hour * 60 minutes)\nconst endTime = 6 * 60;  // 6:00 AM converted to minutes (6 hours * 60 minutes)\n\n// Calculate the input time in minutes since midnight\nconst inputTime = date.getHours() * 60 + date.getMinutes();\n\n// Check if the input time is within the night range\nconst isNight = inputTime >= startTime && inputTime <= endTime;\n\n// Set the output message payload\nmsg.payload = isNight ? 'night' : 'day';\n\n// Return the message\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1060,
+        "y": 180,
+        "wires": [
+            [
+                "e8c5d358430f44b5"
+            ]
+        ]
+    },
+    {
+        "id": "e8c5d358430f44b5",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "Time_of_day?",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "day",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "night",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1260,
+        "y": 200,
+        "wires": [
+            [
+                "c0e3188e1e662465"
+            ],
+            [
+                "358e8ffc23b0191d"
+            ]
+        ]
+    },
+    {
+        "id": "c0e3188e1e662465",
+        "type": "subflow:cd483fcfd9d131fc",
+        "z": "df83788214c878df",
+        "name": "",
+        "x": 2230,
+        "y": 160,
+        "wires": [
+            [
+                "1f1a96e059360a21"
+            ],
+            [
+                "1f1a96e059360a21"
+            ]
+        ]
+    },
+    {
+        "id": "1f1a96e059360a21",
+        "type": "debug",
+        "z": "df83788214c878df",
+        "name": "debug_summer",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 2540,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "4c350b8c98626098",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "is_SoC_<20%",
+        "property": "SoC",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "lte",
+                "v": "20",
+                "vt": "num"
+            },
+            {
+                "t": "gt",
+                "v": "20",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1560,
+        "y": 220,
+        "wires": [
+            [
+                "3df382accc2c46eb"
+            ],
+            [
+                "a84fc6e7dad9a0cc"
+            ]
+        ]
+    },
+    {
+        "id": "a84fc6e7dad9a0cc",
+        "type": "function",
+        "z": "df83788214c878df",
+        "name": "Chck_price",
+        "func": "// Check if global.PriceRaw is larger than 0,875 kr. incl. VAT\nmsg.payload = global.get(\"PriceRaw\") >= 70.0;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1830,
+        "y": 260,
+        "wires": [
+            [
+                "77ea555f9eea5999"
+            ]
+        ]
+    },
+    {
+        "id": "77ea555f9eea5999",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "Price_high_enough?",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "false"
+            },
+            {
+                "t": "true"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 2020,
+        "y": 240,
+        "wires": [
+            [
+                "c0e3188e1e662465"
+            ],
+            [
+                "f8daaa76d8f4afb5"
+            ]
+        ]
+    },
+    {
+        "id": "f8daaa76d8f4afb5",
+        "type": "subflow:bbec9d41a5a0a579",
+        "z": "df83788214c878df",
+        "name": "",
+        "x": 2250,
+        "y": 240,
+        "wires": [
+            [
+                "1f1a96e059360a21"
+            ],
+            [
+                "1f1a96e059360a21"
+            ]
+        ]
+    },
+    {
+        "id": "f010508cb773ee11",
+        "type": "function",
+        "z": "df83788214c878df",
+        "name": "Is_It_Night_Day_or_Peak?",
+        "func": "// Function node code\nconst inputDate = global.get('Timestamp'); // Get the timestamp from global context\nconst date = new Date(inputDate);\n\n// Define start and end times within the day (in minutes since midnight)\nconst nightStartTime = 1 * 60;    // 01:00 AM converted to minutes (1 hour * 60 minutes)\nconst dayStartTime = 6 * 60    // 06:00 AM converted to minutes (1 hour * 60 minutes)\nconst peakStartTime = 17 * 60;    // 05:00 PM converted to minutes (17 hours * 60 minutes)\nconst peakEndTime = 21 * 60;      // 09:00 PM converted to minutes (21 hours * 60 minutes)\n\n\n// Calculate the input time in minutes since midnight\nlet inputTime = date.getHours() * 60 + date.getMinutes();\n\n// Check if the input time falls within the defined ranges\nlet timeCategory;\nif (inputTime >= nightStartTime && inputTime < dayStartTime) {\n    timeCategory = 'night';\n} else if (inputTime >= dayStartTime && inputTime < peakStartTime) {\n    timeCategory = 'day';\n} else if (inputTime >= peakStartTime && inputTime < peakEndTime) {\n    timeCategory = 'peak';\n} else {\n    timeCategory = 'evening';\n}\n\n// Set the output message payload\nmsg.payload = timeCategory;\n\n// Return the message\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1100,
+        "y": 580,
+        "wires": [
+            [
+                "b4d3e11896ead3b6"
+            ]
+        ]
+    },
+    {
+        "id": "b4d3e11896ead3b6",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "Time_of_day?",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "night",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "peak",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "day",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "evening",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 4,
+        "x": 1340,
+        "y": 580,
+        "wires": [
+            [
+                "4cc69ec8eef4b0b7"
+            ],
+            [
+                "1e37f7bd87b6ddad"
+            ],
+            [
+                "efcef0310db8efad"
+            ],
+            [
+                "9860d171c1b4b7e3"
+            ]
+        ]
+    },
+    {
+        "id": "4cc69ec8eef4b0b7",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "How_Much_Sun_Tomorrow?",
+        "property": "Sun_Today",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "btwn",
+                "v": "0",
+                "vt": "num",
+                "v2": "6",
+                "v2t": "num"
+            },
+            {
+                "t": "btwn",
+                "v": "6",
+                "vt": "num",
+                "v2": "12",
+                "v2t": "num"
+            },
+            {
+                "t": "btwn",
+                "v": "12",
+                "vt": "num",
+                "v2": "18",
+                "v2t": "num"
+            },
+            {
+                "t": "gt",
+                "v": "18",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 4,
+        "x": 1580,
+        "y": 460,
+        "wires": [
+            [
+                "d9a498c88371dc8d"
+            ],
+            [
+                "06ca2c4478e2cb57"
+            ],
+            [
+                "4320159b34809a0a"
+            ],
+            [
+                "83ec3022ed9599d6"
+            ]
+        ]
+    },
+    {
+        "id": "d9a498c88371dc8d",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "SoC >= 75%?",
+        "property": "SoC",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "gte",
+                "v": "75",
+                "vt": "str"
+            },
+            {
+                "t": "lt",
+                "v": "75",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1860,
+        "y": 340,
+        "wires": [
+            [
+                "6271546d948b3374"
+            ],
+            [
+                "e1b097565c65722f"
+            ]
+        ]
+    },
+    {
+        "id": "06ca2c4478e2cb57",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "SoC >= 50%?",
+        "property": "SoC",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "gte",
+                "v": "50",
+                "vt": "str"
+            },
+            {
+                "t": "lt",
+                "v": "50",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1860,
+        "y": 420,
+        "wires": [
+            [
+                "6271546d948b3374"
+            ],
+            [
+                "e1b097565c65722f"
+            ]
+        ]
+    },
+    {
+        "id": "4320159b34809a0a",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "SoC >= 25%?",
+        "property": "SoC",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "gte",
+                "v": "25",
+                "vt": "str"
+            },
+            {
+                "t": "lt",
+                "v": "25",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1860,
+        "y": 500,
+        "wires": [
+            [
+                "6271546d948b3374"
+            ],
+            [
+                "e1b097565c65722f"
+            ]
+        ]
+    },
+    {
+        "id": "83ec3022ed9599d6",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "SoC > 1%?",
+        "property": "SoC",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "gt",
+                "v": "1",
+                "vt": "str"
+            },
+            {
+                "t": "lte",
+                "v": "1",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1850,
+        "y": 580,
+        "wires": [
+            [
+                "6271546d948b3374"
+            ],
+            [
+                "e1b097565c65722f"
+            ]
+        ]
+    },
+    {
+        "id": "6271546d948b3374",
+        "type": "subflow:2205fa4294b5478a",
+        "z": "df83788214c878df",
+        "name": "",
+        "x": 2260,
+        "y": 420,
+        "wires": [
+            [
+                "2b8e90f4c79f5478"
+            ],
+            [
+                "2b8e90f4c79f5478"
+            ]
+        ]
+    },
+    {
+        "id": "e1b097565c65722f",
+        "type": "subflow:78d769ea3d1c094e",
+        "z": "df83788214c878df",
+        "name": "",
+        "x": 2240,
+        "y": 500,
+        "wires": [
+            [
+                "2b8e90f4c79f5478"
+            ],
+            [
+                "2b8e90f4c79f5478"
+            ]
+        ]
+    },
+    {
+        "id": "fa555e0fe1e17850",
+        "type": "debug",
+        "z": "df83788214c878df",
+        "name": "debug_winter_peak",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 2950,
+        "y": 640,
+        "wires": []
+    },
+    {
+        "id": "1e37f7bd87b6ddad",
+        "type": "function",
+        "z": "df83788214c878df",
+        "name": "Chck_price",
+        "func": "// Check if global.PriceTotal is larger than global.PriceAvgNextNight x 1,25\nmsg.payload = global.get(\"PriceTotal\") < global.get(\"PriceAvgNextNight\") * 1.25;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1570,
+        "y": 620,
+        "wires": [
+            [
+                "5a6c95bdc372ec56"
+            ]
+        ]
+    },
+    {
+        "id": "5a6c95bdc372ec56",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "Price_to_low?",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1760,
+        "y": 660,
+        "wires": [
+            [
+                "cca2e8ce08b1086d"
+            ],
+            [
+                "f9ccb72ac4ee29ba"
+            ]
+        ]
+    },
+    {
+        "id": "e224e8bdb9711e0f",
+        "type": "subflow:2205fa4294b5478a",
+        "z": "df83788214c878df",
+        "name": "",
+        "x": 2660,
+        "y": 600,
+        "wires": [
+            [
+                "fa555e0fe1e17850"
+            ],
+            [
+                "fa555e0fe1e17850"
+            ]
+        ]
+    },
+    {
+        "id": "f9ccb72ac4ee29ba",
+        "type": "subflow:cd483fcfd9d131fc",
+        "z": "df83788214c878df",
+        "name": "",
+        "x": 2590,
+        "y": 700,
+        "wires": [
+            [
+                "fa555e0fe1e17850"
+            ],
+            [
+                "fa555e0fe1e17850"
+            ]
+        ]
+    },
+    {
+        "id": "d12aaac17bb93a82",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "SoC_Status?",
+        "property": "SoC",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "gt",
+                "v": "75",
+                "vt": "num"
+            },
+            {
+                "t": "btwn",
+                "v": "30",
+                "vt": "num",
+                "v2": "75",
+                "v2t": "num"
+            },
+            {
+                "t": "lt",
+                "v": "30",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 3,
+        "x": 1970,
+        "y": 740,
+        "wires": [
+            [
+                "f45a59a35e613fc9"
+            ],
+            [
+                "f570df494f454e46"
+            ],
+            [
+                "9b229aedd0ff1a46"
+            ]
+        ]
+    },
+    {
+        "id": "f45a59a35e613fc9",
+        "type": "subflow:cd483fcfd9d131fc",
+        "z": "df83788214c878df",
+        "name": "",
+        "x": 2810,
+        "y": 760,
+        "wires": [
+            [
+                "a42530fec5655abd"
+            ],
+            [
+                "a42530fec5655abd"
+            ]
+        ]
+    },
+    {
+        "id": "2a0d174355955295",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "Price_high_enough?",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 2400,
+        "y": 800,
+        "wires": [
+            [
+                "f45a59a35e613fc9"
+            ],
+            [
+                "cc963cc075ba9301"
+            ]
+        ]
+    },
+    {
+        "id": "40cbff63fc77f72d",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "Price_high_enough?",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "false"
+            },
+            {
+                "t": "true"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1980,
+        "y": 1200,
+        "wires": [
+            [
+                "928b35e7f911ca87"
+            ],
+            [
+                "c1a85610cb0a02f8"
+            ]
+        ]
+    },
+    {
+        "id": "2950ce0abff68206",
+        "type": "function",
+        "z": "df83788214c878df",
+        "name": "Chck_price",
+        "func": "// Check if global.PriceAverageEvening is larger than global.PriceAvgNextNight x 1,25\nmsg.payload = global.get(\"PriceAvgEve\") > global.get(\"PriceAvgNextNight\") * 1.2;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1790,
+        "y": 1200,
+        "wires": [
+            [
+                "40cbff63fc77f72d"
+            ]
+        ]
+    },
+    {
+        "id": "cc963cc075ba9301",
+        "type": "subflow:2205fa4294b5478a",
+        "z": "df83788214c878df",
+        "name": "",
+        "x": 2840,
+        "y": 860,
+        "wires": [
+            [
+                "a42530fec5655abd"
+            ],
+            [
+                "a42530fec5655abd"
+            ]
+        ]
+    },
+    {
+        "id": "2b8e90f4c79f5478",
+        "type": "debug",
+        "z": "df83788214c878df",
+        "name": "debug_winter_night",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 2550,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "a852009dba0eb46c",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "Winter",
+        "info": "",
+        "x": 1070,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "5abb93a068ef4fd6",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "Summer",
+        "info": "",
+        "x": 1060,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "fe267b28b9fb07f9",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "00:00-06:00",
+        "info": "",
+        "x": 1270,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "8639bf126cecfa63",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "06:00-00:00",
+        "info": "",
+        "x": 1270,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "c6f29735fe066ab6",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "<= 20%",
+        "info": "",
+        "x": 1590,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "1fde704d9e4b57a5",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "> 20%",
+        "info": "",
+        "x": 1590,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "ea05964c0f907540",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "Price >= 0,70 ex VAT",
+        "info": "",
+        "x": 2260,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "71f942b951ade90c",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "Price < 0,70 ex VAT",
+        "info": "",
+        "x": 2250,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "805266c91636f53a",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "01:00-06:00",
+        "info": "",
+        "x": 1350,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "495dbb124798399e",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "06:00-17:00",
+        "info": "",
+        "x": 1350,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "ea9a9135fe0a1cd8",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "21:00 - 01:00",
+        "info": "",
+        "x": 1350,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "164d82d30ab8f162",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "17:00-21:00",
+        "info": "",
+        "x": 1350,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "c3617d870879b8c6",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "PriceTotal < AvgNextNight x 1,25",
+        "info": "",
+        "x": 1610,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "f8d1b4706ccc2bce",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "> 75%",
+        "info": "",
+        "x": 1950,
+        "y": 780,
+        "wires": []
+    },
+    {
+        "id": "f2a07445905f1071",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "30% - 75%",
+        "info": "",
+        "x": 1960,
+        "y": 820,
+        "wires": []
+    },
+    {
+        "id": "85b5d2b15a436417",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "< 30%",
+        "info": "",
+        "x": 1950,
+        "y": 860,
+        "wires": []
+    },
+    {
+        "id": "17ca880a593fab50",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "Total > Avg.Night x 1,25 OR Total > Avg.Peak",
+        "info": "",
+        "x": 2270,
+        "y": 740,
+        "wires": []
+    },
+    {
+        "id": "b53f029614be739d",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "True",
+        "info": "",
+        "x": 2750,
+        "y": 720,
+        "wires": []
+    },
+    {
+        "id": "9a03cd998392e2ee",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "False",
+        "info": "",
+        "x": 2770,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "07e43517f26b5d61",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "True",
+        "info": "",
+        "x": 1890,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "545802cf16d881de",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "False",
+        "info": "",
+        "x": 1890,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "81ddfeee44808d59",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "AvgEvening > AvgNextNight x 1,25",
+        "info": "",
+        "x": 2020,
+        "y": 1240,
+        "wires": []
+    },
+    {
+        "id": "f570df494f454e46",
+        "type": "function",
+        "z": "df83788214c878df",
+        "name": "chck_price",
+        "func": "// Combine checks into one function node\n// Check if global.PriceTotal is larger than global.PriceAvgNight x 1.25\n// OR if global.PriceTotal is larger than global.PriceAvgPeak\n\nvar priceTotal = global.get(\"PriceTotal\");\nvar priceAvgNight = global.get(\"PriceAvgNight\");\nvar priceAvgPeak = global.get(\"PriceAvgPeak\");\n\nmsg.payload = priceTotal > priceAvgNight * 1.25 || priceTotal > priceAvgPeak;\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2210,
+        "y": 780,
+        "wires": [
+            [
+                "2a0d174355955295"
+            ]
+        ]
+    },
+    {
+        "id": "dfe629fcbc85b719",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "How_Much_Sun_Tomorrow?",
+        "property": "Sun_Tomorrow",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "lt",
+                "v": "20",
+                "vt": "str"
+            },
+            {
+                "t": "btwn",
+                "v": "20",
+                "vt": "num",
+                "v2": "40",
+                "v2t": "num"
+            },
+            {
+                "t": "gt",
+                "v": "40",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 3,
+        "x": 1500,
+        "y": 1300,
+        "wires": [
+            [
+                "2950ce0abff68206"
+            ],
+            [
+                "50bca0ed28c51115"
+            ],
+            [
+                "c1a85610cb0a02f8"
+            ]
+        ]
+    },
+    {
+        "id": "c1a85610cb0a02f8",
+        "type": "subflow:cd483fcfd9d131fc",
+        "z": "df83788214c878df",
+        "name": "",
+        "x": 2830,
+        "y": 1320,
+        "wires": [
+            [
+                "a42530fec5655abd"
+            ],
+            [
+                "a42530fec5655abd"
+            ]
+        ]
+    },
+    {
+        "id": "1e0946ec248a0885",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "< 20 kWh",
+        "info": "",
+        "x": 1580,
+        "y": 1260,
+        "wires": []
+    },
+    {
+        "id": "15bbfd8512e0d40c",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "20 kWh - 40 kWh",
+        "info": "",
+        "x": 1600,
+        "y": 1340,
+        "wires": []
+    },
+    {
+        "id": "b306a05ec8e05f28",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "<6 kWh",
+        "info": "",
+        "x": 1830,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "b0d254ef21a3aad5",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "6-12 kWh",
+        "info": "",
+        "x": 1840,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "9f4a2f96be7062e9",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "12-18 kWh",
+        "info": "",
+        "x": 1840,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "a1d61856170130cc",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": ">18 kWh",
+        "info": "",
+        "x": 1840,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "9b229aedd0ff1a46",
+        "type": "function",
+        "z": "df83788214c878df",
+        "name": "chck_price",
+        "func": "// Checks if global.PriceTotal is larger than global.PriceAvgPeak\n\nvar priceTotal = global.get(\"PriceTotal\");\nvar priceAvgNight = global.get(\"PriceAvgNight\");\nvar priceAvgPeak = global.get(\"PriceAvgPeak\");\n\nmsg.payload = priceTotal > priceAvgPeak;\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2190,
+        "y": 820,
+        "wires": [
+            [
+                "2a0d174355955295"
+            ]
+        ]
+    },
+    {
+        "id": "737c602d89c80ea1",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "Total > Avg.Peak",
+        "info": "",
+        "x": 2180,
+        "y": 860,
+        "wires": []
+    },
+    {
+        "id": "9860d171c1b4b7e3",
+        "type": "function",
+        "z": "df83788214c878df",
+        "name": "Is_It_After_Midnight?",
+        "func": "// Function node code\nconst inputDate = global.get('Timestamp'); // Get the timestamp from global context\nconst date = new Date(inputDate);\n\n// Define start and end times within the day (in minutes since midnight)\nconst midnightStartTime = 0 * 60;    // 00:00 AM converted to minutes (1 hour * 60 minutes)\nconst nightStartTime = 1 * 60    // 01:00 AM converted to minutes (1 hour * 60 minutes)\n\n\n// Calculate the input time in minutes since midnight\nlet inputTime = date.getHours() * 60 + date.getMinutes();\n\n// Check if the input time falls within the defined ranges\nlet timeCategory;\nif (inputTime >= midnightStartTime && inputTime < nightStartTime)\n    timeCategory = '00-01';\nelse\n    timeCategory = '21-00';\n\n\n// Set the output message payload\nmsg.payload = timeCategory;\n\n// Return the message\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1320,
+        "y": 800,
+        "wires": [
+            [
+                "b1cdd88176327a9b"
+            ]
+        ]
+    },
+    {
+        "id": "a42530fec5655abd",
+        "type": "debug",
+        "z": "df83788214c878df",
+        "name": "debug_winter_day/evening",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 3140,
+        "y": 800,
+        "wires": []
+    },
+    {
+        "id": "b1cdd88176327a9b",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "Time_of_day?",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "00-01",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "21-00",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1440,
+        "y": 1140,
+        "wires": [
+            [
+                "928b35e7f911ca87"
+            ],
+            [
+                "dfe629fcbc85b719"
+            ]
+        ]
+    },
+    {
+        "id": "9439ccca0ca5481b",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "Temporary switch",
+        "property": "Production",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "gte",
+                "v": "3500",
+                "vt": "str"
+            },
+            {
+                "t": "lt",
+                "v": "3500",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 750,
+        "y": 260,
+        "wires": [
+            [
+                "04117cab001feda9"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "04117cab001feda9",
+        "type": "subflow:cd483fcfd9d131fc",
+        "z": "df83788214c878df",
+        "name": "",
+        "x": 890,
+        "y": 120,
+        "wires": [
+            [
+                "8c450191a2703203"
+            ],
+            [
+                "8c450191a2703203"
+            ]
+        ]
+    },
+    {
+        "id": "8c450191a2703203",
+        "type": "debug",
+        "z": "df83788214c878df",
+        "name": "debug_temp",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 1070,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "50bca0ed28c51115",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "SoC_Status?",
+        "property": "SoC",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "lte",
+                "v": "25",
+                "vt": "num"
+            },
+            {
+                "t": "gt",
+                "v": "25",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1750,
+        "y": 1280,
+        "wires": [
+            [
+                "2950ce0abff68206"
+            ],
+            [
+                "c1a85610cb0a02f8"
+            ]
+        ]
+    },
+    {
+        "id": "a0cd92d41207033d",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "> 40 kWh",
+        "info": "",
+        "x": 1580,
+        "y": 1380,
+        "wires": []
+    },
+    {
+        "id": "6bb1506aef9de188",
+        "type": "config",
+        "z": "df83788214c878df",
+        "name": "SonnenBatterie_config",
+        "properties": [
+            {
+                "p": "sonnen_api_ip",
+                "pt": "global",
+                "to": "",
+                "tot": "str"
+            },
+            {
+                "p": "sonnen_api_token",
+                "pt": "global",
+                "to": "",
+                "tot": "str"
+            }
+        ],
+        "active": true,
+        "x": 200,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "b0e8f01600aa0de0",
+        "type": "api-call-service",
+        "z": "df83788214c878df",
+        "name": "Update_Solcast_Forecast",
+        "server": "f3c6dfc0.bd122",
+        "version": 5,
+        "debugenabled": false,
+        "domain": "solcast_solar",
+        "service": "update_forecasts",
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [],
+        "data": "",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "none",
+        "x": 490,
+        "y": 220,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "aa1813a7bcfd3023",
+        "type": "inject",
+        "z": "df83788214c878df",
+        "name": "Run_at_00:00->04:00",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "0 0-3 * * *",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 210,
+        "y": 180,
+        "wires": [
+            [
+                "b0e8f01600aa0de0"
+            ]
+        ]
+    },
+    {
+        "id": "939f19817330f4e9",
+        "type": "inject",
+        "z": "df83788214c878df",
+        "name": "Run_at_11:30",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "30 11 * * *",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 180,
+        "y": 220,
+        "wires": [
+            [
+                "b0e8f01600aa0de0"
+            ]
+        ]
+    },
+    {
+        "id": "9d908946de2da711",
+        "type": "inject",
+        "z": "df83788214c878df",
+        "name": "Run_at_20:55",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "55 20 * * *",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 180,
+        "y": 260,
+        "wires": [
+            [
+                "b0e8f01600aa0de0"
+            ]
+        ]
+    },
+    {
+        "id": "efcef0310db8efad",
+        "type": "function",
+        "z": "df83788214c878df",
+        "name": "Is_It_Morning?",
+        "func": "// Function node code\nconst inputDate = global.get('Timestamp'); // Get the timestamp from global context\nconst date = new Date(inputDate);\n\n// Define start and end times within the day (in minutes since midnight)\nconst morningStartTime = 6 * 60;    // 06:00 AM converted to minutes (1 hour * 60 minutes)\nconst dayStartTime = 9 * 60    // 09:00 AM converted to minutes (1 hour * 60 minutes)\n\n\n// Calculate the input time in minutes since midnight\nlet inputTime = date.getHours() * 60 + date.getMinutes();\n\n// Check if the input time falls within the defined ranges\nlet timeCategory;\nif (inputTime >= morningStartTime && inputTime < dayStartTime)\n    timeCategory = '06-09';\nelse\n    timeCategory = '09-17';\n\n\n// Set the output message payload\nmsg.payload = timeCategory;\n\n// Return the message\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1480,
+        "y": 760,
+        "wires": [
+            [
+                "26e903de98efa271"
+            ]
+        ]
+    },
+    {
+        "id": "26e903de98efa271",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "Time_of_day?",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "09-17",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "06-09",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1680,
+        "y": 760,
+        "wires": [
+            [
+                "d12aaac17bb93a82"
+            ],
+            [
+                "652f73c2387b4371"
+            ]
+        ]
+    },
+    {
+        "id": "928b35e7f911ca87",
+        "type": "subflow:2205fa4294b5478a",
+        "z": "df83788214c878df",
+        "name": "",
+        "x": 2800,
+        "y": 1220,
+        "wires": [
+            [
+                "a42530fec5655abd"
+            ],
+            [
+                "a42530fec5655abd"
+            ]
+        ]
+    },
+    {
+        "id": "652f73c2387b4371",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "How_Much_Sun_Today?",
+        "property": "Sun_Today",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "lt",
+                "v": "20",
+                "vt": "str"
+            },
+            {
+                "t": "btwn",
+                "v": "20",
+                "vt": "num",
+                "v2": "40",
+                "v2t": "num"
+            },
+            {
+                "t": "gt",
+                "v": "40",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 3,
+        "x": 1710,
+        "y": 1000,
+        "wires": [
+            [
+                "d12aaac17bb93a82"
+            ],
+            [
+                "9c3bfaa258d6ce95"
+            ],
+            [
+                "e0faa0348f6924ec"
+            ]
+        ]
+    },
+    {
+        "id": "b855440657c642a8",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "< 20 kWh",
+        "info": "",
+        "x": 1780,
+        "y": 940,
+        "wires": []
+    },
+    {
+        "id": "1da930d72fa3fe48",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "20 kWh - 40 kWh",
+        "info": "",
+        "x": 1800,
+        "y": 1060,
+        "wires": []
+    },
+    {
+        "id": "5a697860690f5d44",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "> 40 kWh",
+        "info": "",
+        "x": 1780,
+        "y": 1100,
+        "wires": []
+    },
+    {
+        "id": "9c3bfaa258d6ce95",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "SoC_Status?",
+        "property": "SoC",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "lt",
+                "v": "20",
+                "vt": "num"
+            },
+            {
+                "t": "gt",
+                "v": "20",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1970,
+        "y": 960,
+        "wires": [
+            [
+                "f570df494f454e46"
+            ],
+            [
+                "f45a59a35e613fc9"
+            ]
+        ]
+    },
+    {
+        "id": "e0faa0348f6924ec",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "SoC_Status?",
+        "property": "SoC",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "gt",
+                "v": "5",
+                "vt": "num"
+            },
+            {
+                "t": "lt",
+                "v": "5",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1970,
+        "y": 1020,
+        "wires": [
+            [
+                "f45a59a35e613fc9"
+            ],
+            [
+                "cc963cc075ba9301"
+            ]
+        ]
+    },
+    {
+        "id": "bff85965a643a578",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "06:00-09:00",
+        "info": "",
+        "x": 1730,
+        "y": 800,
+        "wires": []
+    },
+    {
+        "id": "0515d453407e9e29",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "09:00-17:00",
+        "info": "",
+        "x": 1730,
+        "y": 720,
+        "wires": []
+    },
+    {
+        "id": "cca2e8ce08b1086d",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "How_Much_Sun_Tomorrow?",
+        "property": "Sun_Tomorrow",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "lt",
+                "v": "6",
+                "vt": "str"
+            },
+            {
+                "t": "btwn",
+                "v": "6",
+                "vt": "num",
+                "v2": "12",
+                "v2t": "num"
+            },
+            {
+                "t": "btwn",
+                "v": "12",
+                "vt": "num",
+                "v2": "18",
+                "v2t": "num"
+            },
+            {
+                "t": "gt",
+                "v": "18",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 4,
+        "x": 2120,
+        "y": 600,
+        "wires": [
+            [
+                "407332ae9aeb9c0f"
+            ],
+            [
+                "44de8c8c872a51d9"
+            ],
+            [
+                "e4d1792717a5ed9f"
+            ],
+            [
+                "f9ccb72ac4ee29ba"
+            ]
+        ]
+    },
+    {
+        "id": "42de37277c539096",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "< 12 kWh",
+        "info": "",
+        "x": 2200,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "12dd536d04e23388",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "12 kWh - 18 kWh",
+        "info": "",
+        "x": 2220,
+        "y": 660,
+        "wires": []
+    },
+    {
+        "id": "8e2b0797209ae407",
+        "type": "comment",
+        "z": "df83788214c878df",
+        "name": "> 18 kWh",
+        "info": "",
+        "x": 2200,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "e4d1792717a5ed9f",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "SoC_Status?",
+        "property": "SoC",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "lte",
+                "v": "25",
+                "vt": "num"
+            },
+            {
+                "t": "gt",
+                "v": "25",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 2390,
+        "y": 620,
+        "wires": [
+            [
+                "e224e8bdb9711e0f"
+            ],
+            [
+                "f9ccb72ac4ee29ba"
+            ]
+        ]
+    },
+    {
+        "id": "44de8c8c872a51d9",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "SoC_Status?",
+        "property": "SoC",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "lte",
+                "v": "50",
+                "vt": "num"
+            },
+            {
+                "t": "gt",
+                "v": "50",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 2390,
+        "y": 580,
+        "wires": [
+            [
+                "e224e8bdb9711e0f"
+            ],
+            [
+                "f9ccb72ac4ee29ba"
+            ]
+        ]
+    },
+    {
+        "id": "407332ae9aeb9c0f",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "SoC_Status?",
+        "property": "SoC",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "lte",
+                "v": "75",
+                "vt": "num"
+            },
+            {
+                "t": "gt",
+                "v": "75",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 2390,
+        "y": 540,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "358e8ffc23b0191d",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "How_Much_Sun_Today?",
+        "property": "Sun_Today",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "gte",
+                "v": "40",
+                "vt": "num"
+            },
+            {
+                "t": "lt",
+                "v": "40",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1350,
+        "y": 300,
+        "wires": [
+            [
+                "4c350b8c98626098"
+            ],
+            [
+                "3df382accc2c46eb"
+            ]
+        ]
+    },
+    {
+        "id": "3df382accc2c46eb",
+        "type": "switch",
+        "z": "df83788214c878df",
+        "name": "is_car_charging?",
+        "property": "CarStatus",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "charging",
+                "vt": "str"
+            },
+            {
+                "t": "neq",
+                "v": "charging",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1870,
+        "y": 120,
+        "wires": [
+            [
+                "045adc178c3c56de"
+            ],
+            [
+                "c0e3188e1e662465"
+            ]
+        ]
+    },
+    {
+        "id": "045adc178c3c56de",
+        "type": "subflow:2205fa4294b5478a",
+        "z": "df83788214c878df",
+        "name": "",
+        "x": 2260,
+        "y": 100,
+        "wires": [
+            [
+                "1f1a96e059360a21"
+            ],
+            [
+                "1f1a96e059360a21"
+            ]
+        ]
+    }
+]
