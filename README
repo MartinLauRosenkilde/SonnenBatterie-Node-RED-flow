@@ -1,3 +1,11 @@
+Updated 17-04-2023:
+Bugfixes in the summer-part of the flow.
+Updated/revised flow for smarter battery control and lower average electricity costs during peak hours in winter.
+Added a few more nodes to the summer part of the flow incl. control during night to see if EV is charging, so that I don't empty the house battery into the car at all costs.
+
+---------------------------------------------
+
+
 Updated 09-04-2023:
 Bugfixes
 Updated/revised flow for smarter battery control and lower average electricity costs
